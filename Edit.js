@@ -7,13 +7,18 @@ import {
   TouchableOpacity,
   Image,
   TextInput,
+  Button,
 } from "react-native";
 import DatePicker from "./DatePicker";
 import { Feather, AntDesign } from "@expo/vector-icons";
 
 export default ({ navigation, route }) => {
   const [datePicker, setDatePicker] = useState(false);
-
+  const [text, setChangeText] = useState("");
+  const [alignStatus, setAlignStatus] = useState(0);
+  // const [alignText, setAlignText] = useState("center");
+  
+  
   const cancelAlert = () => {
     Alert.alert("", "작성한 내용이 저장되지 않아요. 화면을 닫을까요?", [
       { text: "X" },
@@ -64,12 +69,51 @@ export default ({ navigation, route }) => {
   const callDatePicker = () => {
     if (datePicker === false) {
       setDatePicker(true);
-    } else { 
+    } else {
       setDatePicker(false);
     }
-    
-  }    
-  console.log(datePicker);
+  };
+  const showTime = () => {
+    const d = new Date();
+    const c = `${d.getHours() - 12}:${d.getMinutes()} ${
+      d.getHours() < 12 ? "AM" : "PM"
+    }`;
+    const beforeText = text;
+    setChangeText(beforeText + c);
+  };
+  const beAlign = () => {
+    // const center = 0; default = center
+    // const left = 1;
+    // const right = 2;
+    switch (alignStatus) {
+      case 0:
+        setAlignStatus(1);
+        break;
+      case 1:
+        setAlignStatus(2);
+        break;
+      default:
+        setAlignStatus(0);
+        break;
+    }
+    console.log(alignStatus);
+    // changeTextAlign();
+  };
+
+  // const changeTextAlign = () => {
+  //   switch (alignStatus) {
+  //     case 0:
+  //       setAlignText("center");
+  //       break;
+  //     case 1:
+  //       setAlignText("left");
+  //       break;
+  //     default:
+  //       setAlignText("right");
+  //       break;
+  //   }
+  //   console.log("alignText: " + alignText);
+  // };
 
   return (
     <View style={styles.container}>
@@ -90,18 +134,72 @@ export default ({ navigation, route }) => {
       <View style={styles.contents}>
         <View style={styles.dateDayBox}>
           <TouchableOpacity onPress={callDatePicker}>
-            { datePicker  === true ? <DatePicker/ >: console.log(datePicker) }
+            {datePicker === true ? <DatePicker /> : null}
             <Text style={styles.dateText}>3</Text>
           </TouchableOpacity>
           <Text style={styles.dayText}>THU</Text>
         </View>
-        <View style={styles.imageBox}>
+        <View style={styles.textBox}>
           <Image style={styles.buttonImage} source={checkSwitch()} />
           <Text style={styles.moodMent}>짜증나</Text>
-          <TextInput
-            multiline
-            style={styles.mainText}
-          >여기다가 일기 씀. 얼마나 길게 쓸지는 아무도 모름. 무슨 말을 쓸지도 아무도 모름</TextInput>
+          <View>
+            <TextInput
+              multiline
+              style={styles.mainText}
+              value={text}
+              onChangeText={setChangeText}
+              textAlign="center"
+            />
+          </View>
+        </View>
+      </View>
+      <View style={styles.buttonBox}>
+        <View style={styles.leftButtons}>
+          <TouchableOpacity onPress={() => console.log(1)}>
+            <AntDesign
+              name="picture"
+              size={24}
+              color="black"
+              style={styles.button}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={beAlign}>
+            {alignStatus === 0 ? (
+              <Feather
+                name="align-center"
+                size={24}
+                color="black"
+                style={styles.button}
+              />
+            ) : alignStatus === 1 ? (
+              <Feather
+                name="align-left"
+                size={24}
+                color="black"
+                style={styles.button}
+              />
+            ) : (
+              <Feather
+                name="align-right"
+                size={24}
+                color="black"
+                style={styles.button}
+              />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => console.log(3)}>
+            <Feather
+              name="smile"
+              size={24}
+              color="black"
+              style={styles.button}
+            />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.rigthButton}>
+          <TouchableOpacity onPress={showTime}>
+            <Feather name="clock" size={24} color="black" />
+          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -134,7 +232,7 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 40,
     fontWeight: "bold",
-    marginLeft: 10
+    marginLeft: 10,
   },
   dayText: {
     fontSize: 15,
@@ -142,9 +240,9 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontFamily: "CookieRun",
   },
-  imageBox: {
-    flex: 1,
-    alignItems: "center"
+  textBox: {
+    // flex: 1,
+    alignItems: "center",
   },
   buttonImage: {
     width: 110,
@@ -160,7 +258,17 @@ const styles = StyleSheet.create({
     fontFamily: "CookieRun",
     paddingLeft: 50,
     paddingRight: 50,
-    textAlign: "center"
-
-  }
+    textAlign: "center",
+  },
+  buttonBox: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    margin: 10,
+  },
+  leftButtons: {
+    flexDirection: "row",
+  },
+  button: {
+    paddingRight: 10,
+  },
 });
