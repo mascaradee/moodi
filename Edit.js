@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Text,
   View,
@@ -7,18 +7,27 @@ import {
   TouchableOpacity,
   Image,
   TextInput,
-  Button,
+  Modal,
+  Pressable,
 } from "react-native";
 import DatePicker from "./DatePicker";
-import { Feather, AntDesign } from "@expo/vector-icons";
+import { Feather, AntDesign, Entypo } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import EmojiBoard from "react-native-emoji-board";
 
 export default ({ navigation, route }) => {
   const [datePicker, setDatePicker] = useState(false);
   const [text, setChangeText] = useState("");
   const [alignStatus, setAlignStatus] = useState(0);
+  const [image, setImage] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
   // const [alignText, setAlignText] = useState("center");
-  
-  
+  const [showEmoji, setShowEmoji] = useState(false);
+
+  const onClickEmoji = emoji => {
+    console.log(emoji);
+};
+
   const cancelAlert = () => {
     Alert.alert("", "작성한 내용이 저장되지 않아요. 화면을 닫을까요?", [
       { text: "X" },
@@ -96,8 +105,25 @@ export default ({ navigation, route }) => {
         setAlignStatus(0);
         break;
     }
-    console.log(alignStatus);
     // changeTextAlign();
+  };
+
+  const pickImage = async () => {
+    if (image) {
+      setModalVisible(true);
+      return;
+    }
+
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.cancelled) {
+      setImage(result.uri);
+    }
   };
 
   // const changeTextAlign = () => {
@@ -150,12 +176,18 @@ export default ({ navigation, route }) => {
               onChangeText={setChangeText}
               textAlign="center"
             />
+            {image && (
+              <Image
+                source={{ uri: image }}
+                style={{ width: 200, height: 200 }}
+              />
+            )}
           </View>
         </View>
       </View>
       <View style={styles.buttonBox}>
         <View style={styles.leftButtons}>
-          <TouchableOpacity onPress={() => console.log(1)}>
+          <TouchableOpacity onPress={pickImage}>
             <AntDesign
               name="picture"
               size={24}
@@ -163,6 +195,28 @@ export default ({ navigation, route }) => {
               style={styles.button}
             />
           </TouchableOpacity>
+          <Modal
+            animationType="slide"
+            visible={modalVisible}
+            onRequestClose={() => {
+              Alert.alert("Modal has been closed.");
+              setModalVisible(!modalVisible);
+            }}
+          >
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <Text style={styles.modalText}>
+                  사진은 한 장만 저장할 수 있어요.
+                </Text>
+                <Pressable
+                  style={[styles.button, styles.buttonClose]}
+                  onPress={() => setModalVisible(!modalVisible)}
+                >
+                  <Entypo name="check" size={24} color="black" />
+                </Pressable>
+              </View>
+            </View>
+          </Modal>
           <TouchableOpacity onPress={beAlign}>
             {alignStatus === 0 ? (
               <Feather
@@ -187,7 +241,7 @@ export default ({ navigation, route }) => {
               />
             )}
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => console.log(3)}>
+          <TouchableOpacity onPress={() => setShowEmoji(!showEmoji)}>
             <Feather
               name="smile"
               size={24}
@@ -195,12 +249,17 @@ export default ({ navigation, route }) => {
               style={styles.button}
             />
           </TouchableOpacity>
+          
         </View>
         <View style={styles.rigthButton}>
           <TouchableOpacity onPress={showTime}>
             <Feather name="clock" size={24} color="black" />
           </TouchableOpacity>
         </View>
+      </View>
+      <View style={styles.emojiBox}>
+
+      <EmojiBoard showBoard={showEmoji} onClick={onClickEmoji}  />
       </View>
     </View>
   );
@@ -271,4 +330,32 @@ const styles = StyleSheet.create({
   button: {
     paddingRight: 10,
   },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalView: {
+    backgroundColor: "white",
+    borderRadius: 5,
+    padding: 35,
+    alignItems: "flex-end",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center",
+  },
+  emojiBox: {
+    margin: 0,
+    padding: 0
+  }
 });
